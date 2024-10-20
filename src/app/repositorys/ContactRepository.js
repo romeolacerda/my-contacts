@@ -1,24 +1,4 @@
-const { v4 } = require("uuid");
-
 const db = require("../../database");
-
-let contacts = [
-    {
-        // uuid, universal unique id
-        id: v4(),
-        name: "Matheus",
-        email: "matheus@gmail.com",
-        phone: "12345678",
-        category_id: v4(),
-    },
-    {
-        id: v4(),
-        name: "Romeo",
-        email: "romeo@gmail.com",
-        phone: "07112002",
-        category_id: v4(),
-    },
-];
 
 class ContactRepository {
     async findAll(orderBy = "ASC") {
@@ -44,37 +24,34 @@ class ContactRepository {
         return row;
     }
 
-    delete(id) {
-        return new Promise((resolve) => {
-            contacts = contacts.filter((contact) => contact.id !== id);
-            resolve();
-        });
-    }
-
     async create({ name, email, phone, category_id }) {
         const [row] = await db.query(
-            `INSERT INTO contacts(name, email, phone, category_id) VALUES($1, $2, $3, $4) RETURNING *`,
+            `INSERT INTO contacts(name, email, phone, category_id)
+            VALUES($1, $2, $3, $4)
+            RETURNING *`,
             [name, email, phone, category_id]
         );
         return row;
     }
 
     async update(id, { name, email, phone, category_id }) {
-        return new Promise((resolve) => {
-            const updatedContact = {
-                id: v4(),
-                name,
-                email,
-                phone,
-                category_id,
-            };
+        const [row] = await db.query(
+            `
+            UPDATE contacts
+            SET name = $1, email = $2, phone = $3, category_id = $4
+            WHERE id = $5
+            RETURNIG *
+            `,
+            [name, email, phone, category_id, id]
+        );
+        return row;
+    }
 
-            contacts = contacts.map((contact) =>
-                contact.id === id ? updatedContact : contact
-            );
-
-            resolve(updatedContact);
-        });
+    async delete(id) {
+        const deleteOp = await db.query("DELETE FROM contacts WHERE id = $1", [
+            id,
+        ]);
+        return deleteOp;
     }
 }
 
