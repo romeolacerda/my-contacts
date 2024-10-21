@@ -8,6 +8,7 @@ export default [
     {
         rules: {
             "class-methods-use-this": "off",
+            "no-unused-vars": ["error", { argsIgnorePattern: "next" }],
         },
     },
 ];
