@@ -1,5 +1,6 @@
 /* eslint-disable indent */
 
+import { Link } from 'react-router-dom';
 import {
     Card, Container, Header,
     InputSearchContainer,
@@ -18,7 +19,7 @@ export default function Home() {
       </InputSearchContainer>
       <Header>
         <strong>3 contatos</strong>
-        <a href="/">Novo Contato</a>
+        <Link to="/new">Novo Contato</Link>
       </Header>
       <ListContainer>
         <header>
@@ -39,52 +40,15 @@ export default function Home() {
         </div>
 
         <div className="actions">
-          <a href="/">
+          <Link to="/edit/123">
             <img src={edit} alt="edit" />
-          </a>
+          </Link>
           <button type="button">
             <img src={trash} alt="trash" />
           </button>
         </div>
       </Card>
-      <Card>
-        <div className="info">
-          <div className="contact-name">
-            <strong>Mateus silva</strong>
-            <small>Instagram</small>
-          </div>
-          <span>mateus@devacademy.com.br</span>
-          <span>(41) 99999-9999</span>
-        </div>
 
-        <div className="actions">
-          <a href="/">
-            <img src={edit} alt="edit" />
-          </a>
-          <button type="button">
-            <img src={trash} alt="trash" />
-          </button>
-        </div>
-      </Card>
-      <Card>
-        <div className="info">
-          <div className="contact-name">
-            <strong>Mateus silva</strong>
-            <small>Instagram</small>
-          </div>
-          <span>mateus@devacademy.com.br</span>
-          <span>(41) 99999-9999</span>
-        </div>
-
-        <div className="actions">
-          <a href="/">
-            <img src={edit} alt="edit" />
-          </a>
-          <button type="button">
-            <img src={trash} alt="trash" />
-          </button>
-        </div>
-      </Card>
     </Container>
   );
 }

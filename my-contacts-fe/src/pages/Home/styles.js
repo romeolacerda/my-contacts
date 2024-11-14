@@ -2,6 +2,7 @@ import styled from 'styled-components';
 
 export const Container = styled.div`
 margin-top: 32px;
+position: relative;
 `;
 
 export const Header = styled.header`
@@ -109,7 +110,7 @@ width: 100%;
         border: none;
         border-radius: 25px;
         height: 50px;
-        filter: drop-shadow(0px 4px 10px rgba(0 , 0 , 0, 0.4));
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.4);
         outline: 0;
         padding: 0 16px;
     }
