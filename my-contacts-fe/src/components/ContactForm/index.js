@@ -5,6 +5,8 @@ import FormGroup from '../FormGorup';
 import Input from '../Input';
 import Select from '../Select';
 
+import useErros from '../../hooks/useErros';
+import formatPhone from '../../utils/formatPhone';
 import isEmailValid from '../../utils/isEmailValid';
 import { ButtonContainer, Form } from './styles';
 
@@ -13,19 +15,22 @@ export default function ContactForm({ buttonLabel }) {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [category, setCategory] = useState('');
-  const [erros, setErros] = useState([]);
+
+  const {
+    setError, removeError, getErrorMessageByFieldName, erros,
+  } = useErros();
+
+  const isFormValid = (name && erros.length === 0);
 
   function handleNameChange(event) {
     setName(event.target.value);
 
     if (!event.target.value) {
-      setErros((prevState) => [...prevState, {
+      setError({
         field: 'name', message: 'Nome é obrigatorio',
-      }]);
+      });
     } else {
-      setErros((prevState) => prevState.filter(
-        (error) => error.field !== 'name',
-      ));
+      removeError('name');
     }
   }
 
@@ -33,42 +38,36 @@ export default function ContactForm({ buttonLabel }) {
     setEmail(event.target.value);
 
     if (event.target.value && !isEmailValid(event.target.value)) {
-      const errorAlreadyExits = erros.find((error) => error.field === 'email');
-
-      if (errorAlreadyExits) {
-        return;
-      }
-
-      setErros((prevState) => [...prevState, {
+      setError({
         field: 'email', message: 'Email inválido',
-      }]);
+      });
     } else {
-      setErros((prevState) => prevState.filter(
-        (error) => error.field !== 'email',
-      ));
+      removeError('email');
     }
   }
 
-  console.log(erros);
+  function handlePhoneChange(event) {
+    setPhone(formatPhone(event.target.value));
+  }
 
   function handleSubmit(event) {
     event.preventDefault();
 
-    console.log({
-      name, email, phone, category,
-    });
+    // console.log({
+    //   name, email, phone, category,
+    // });
   }
 
   return (
-    <Form onSubmit={handleSubmit}>
-      <FormGroup>
-        <Input placeholder="Nome" value={name} onChange={(handleNameChange)} />
+    <Form onSubmit={handleSubmit} noValidate>
+      <FormGroup error={getErrorMessageByFieldName('name')}>
+        <Input error={getErrorMessageByFieldName('name')} placeholder="Nome *" value={name} onChange={(handleNameChange)} />
+      </FormGroup>
+      <FormGroup error={getErrorMessageByFieldName('email')}>
+        <Input type="email" error={getErrorMessageByFieldName('email')} placeholder="E-mail" value={email} onChange={handleEmailChange} />
       </FormGroup>
       <FormGroup>
-        <Input placeholder="E-mail" value={email} onChange={handleEmailChange} />
-      </FormGroup>
-      <FormGroup>
-        <Input placeholder="Telefone" value={phone} onChange={(event) => setPhone(event.target.value)} />
+        <Input placeholder="Telefone" value={phone} onChange={handlePhoneChange} maxLength={15} />
       </FormGroup>
       <FormGroup>
         <Select
@@ -82,7 +81,7 @@ export default function ContactForm({ buttonLabel }) {
       </FormGroup>
 
       <ButtonContainer>
-        <Button type="submit">
+        <Button type="submit" disabled={!isFormValid}>
           {buttonLabel}
         </Button>
       </ButtonContainer>
