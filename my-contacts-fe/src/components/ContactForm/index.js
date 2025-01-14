@@ -1,5 +1,9 @@
+/* eslint-disable indent */
 import PropTypes from 'prop-types';
-import { useEffect, useState } from 'react';
+import {
+    forwardRef, useEffect, useImperativeHandle,
+    useState,
+} from 'react';
 import Button from '../Button/index';
 import FormGroup from '../FormGorup';
 import Input from '../Input';
@@ -11,7 +15,7 @@ import formatPhone from '../../utils/formatPhone';
 import isEmailValid from '../../utils/isEmailValid';
 import { ButtonContainer, Form } from './styles';
 
-export default function ContactForm({ buttonLabel, onSubmit }) {
+const ContactForm = forwardRef(({ buttonLabel, onSubmit }, ref) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -25,6 +29,15 @@ export default function ContactForm({ buttonLabel, onSubmit }) {
   } = useErros();
 
   const isFormValid = (name && erros.length === 0);
+
+  useImperativeHandle(ref, () => ({
+    setFieldsValues: (contact) => {
+      setName(contact.name);
+      setEmail(contact.email);
+      setPhone(contact.phone);
+      setcategoryId(contact.category_id);
+    },
+  }), []);
 
   useEffect(() => {
     async function loadCategories() {
@@ -140,9 +153,13 @@ export default function ContactForm({ buttonLabel, onSubmit }) {
 
     </Form>
   );
-}
+});
+
+// eslint-disable-next-line react/prop-types
 
 ContactForm.propTypes = {
   buttonLabel: PropTypes.string.isRequired,
   onSubmit: PropTypes.func.isRequired,
 };
+
+export default ContactForm;
