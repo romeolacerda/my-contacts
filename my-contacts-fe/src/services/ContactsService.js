@@ -1,3 +1,4 @@
+import ContactMapper from './mappers/ContactMapper';
 import HttpClient from './utils/HttpClient';
 
 class ContactsService {
@@ -5,20 +6,28 @@ class ContactsService {
     this.HttpClient = new HttpClient('http://localhost:3001');
   }
 
-  listContatcs(orderBy = 'asc') {
-    return this.HttpClient.get(`/contacts?orderBy=${orderBy}`);
+  async listContatcs(orderBy = 'asc') {
+    const contacts = await this.HttpClient.get(`/contacts?orderBy=${orderBy}`);
+    return contacts.map(ContactMapper.toDomain);
   }
 
-  getContactById(id) {
-    return this.HttpClient.get(`/contacts/${id}`);
+  async getContactById(id) {
+    const contact = await this.HttpClient.get(`/contacts/${id}`);
+    return ContactMapper.toDomain(contact);
   }
 
   createContact(contact) {
-    return this.HttpClient.post('/contacts', { body: contact });
+    const body = ContactMapper.toPersistance(contact);
+    return this.HttpClient.post('/contacts', { body });
   }
 
   updateContact(id, contact) {
-    return this.HttpClient.put(`/contacts/${id}`, { body: contact });
+    const body = ContactMapper.toPersistance(contact);
+    return this.HttpClient.put(`/contacts/${id}`, { body });
+  }
+
+  deleteContact(id) {
+    return this.HttpClient.delete(`/contacts/${id}`);
   }
 }
 

@@ -2,9 +2,6 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable indent */
 
-import {
-    useCallback, useEffect, useMemo, useState,
-} from 'react';
 import { Link } from 'react-router-dom';
 import {
     Card, Container,
@@ -25,62 +22,26 @@ import sad from '../../assets/images/sad.svg';
 import Button from '../../components/Button';
 import Loader from '../../components/Loader';
 import Modal from '../../components/Modal';
-import ContactsService from '../../services/ContactsService';
+import useHome from './useHome';
 
 export default function Home() {
-  const [contacts, setContacts] = useState([]);
-  const [orderBy, setOrderBy] = useState('asc');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
-  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
-  const [contactBeingDeleted, setContactBeingDeleted] = useState(null);
-
-  const filteredContacts = useMemo(() => contacts.filter(
-    (contact) => (contact.name.toLowerCase().includes(searchTerm.toLowerCase())),
-), [contacts, searchTerm]);
-
-    const loadContacts = useCallback(async () => {
-      try {
-      setIsLoading(true);
-
-      const contactsList = await ContactsService.listContatcs(orderBy);
-
-      setHasError(false);
-      setContacts(contactsList);
-      } catch {
-      setHasError(true);
-      } finally {
-      setIsLoading(false);
-      }
-  }, [orderBy]);
-
-    useEffect(() => {
-    loadContacts();
-    }, [loadContacts]);
-
-  function handleToggleOrderBy() {
-    setOrderBy(
-        (prevState) => (prevState === 'asc' ? 'desc' : 'asc'),
-    );
-  }
-
-  function handleChangeSearchTerm(event) {
-    setSearchTerm(event.target.value);
-  }
-
-  function handleTryAgain() {
-    loadContacts();
-  }
-
-  function handleDeleteContact(contact) {
-    setContactBeingDeleted(contact);
-    setIsDeleteModalVisible(true);
-  }
-
-  function handleCloseDeleteModal() {
-    setIsDeleteModalVisible(false);
-  }
+    const {
+        isLoading,
+        isDeleteModalVisible,
+        isLoadingDelete,
+        contactBeingDeleted,
+        handleCloseDeleteModal,
+        handleConfirmDeleteContact,
+        contacts,
+        searchTerm,
+        handleChangeSearchTerm,
+        hasError,
+        filteredContacts,
+        handleTryAgain,
+        orderBy,
+        handleToggleOrderBy,
+        handleDeleteContact,
+    } = useHome();
 
   return (
     <Container>
@@ -88,11 +49,12 @@ export default function Home() {
 
       <Modal
         visible={isDeleteModalVisible}
+        isLoading={isLoadingDelete}
         danger
         title={`Tem certeza que deseja remover o contato "${contactBeingDeleted?.name}" ?`}
         confirmLabel="Deletar"
         onCancel={handleCloseDeleteModal}
-        onConfirm={() => console.log('confirmou')}
+        onConfirm={handleConfirmDeleteContact}
       >
         <p>Esta ação não podera ser desfeita</p>
       </Modal>
@@ -126,7 +88,7 @@ export default function Home() {
 
       {!hasError && (
       <>
-        {contacts.length < 1 && isLoading && (
+        {(contacts.length < 1 || isLoading) && (
         <EmptyListContainer>
           <img src={emptyBox} alt="Empty" />
 
@@ -167,7 +129,7 @@ export default function Home() {
             <div className="info">
               <div className="contact-name">
                 <strong>{contact.name}</strong>
-                {contact.category_name && <small>{contact.category_name}</small>}
+                {contact.category.name && <small>{contact.category.name}</small>}
               </div>
               <span>{contact.email}</span>
               <span>{contact.phone}</span>

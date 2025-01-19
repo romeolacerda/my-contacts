@@ -25,8 +25,8 @@ justify-content: center;
 }
 
 &[disabled]{
-    background: #ccc;
-    cursor: default;
+    background: #ccc !important;
+    cursor: default !important;
 }
 
 ${({ theme, danger }) => danger && css`
