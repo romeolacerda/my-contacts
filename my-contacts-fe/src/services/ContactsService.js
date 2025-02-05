@@ -6,13 +6,13 @@ class ContactsService {
     this.HttpClient = new HttpClient('http://localhost:3001');
   }
 
-  async listContatcs(orderBy = 'asc') {
-    const contacts = await this.HttpClient.get(`/contacts?orderBy=${orderBy}`);
+  async listContatcs(orderBy, signal) {
+    const contacts = await this.HttpClient.get(`/contacts?orderBy=${orderBy || 'asc'}`, { signal });
     return contacts.map(ContactMapper.toDomain);
   }
 
-  async getContactById(id) {
-    const contact = await this.HttpClient.get(`/contacts/${id}`);
+  async getContactById(id, signal) {
+    const contact = await this.HttpClient.get(`/contacts/${id}`, { signal });
     return ContactMapper.toDomain(contact);
   }
 

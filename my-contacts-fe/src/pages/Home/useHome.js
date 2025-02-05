@@ -1,6 +1,8 @@
 /* eslint-disable indent */
 import {
-    useCallback, useEffect, useMemo, useState,
+    useCallback, useDeferredValue, useEffect,
+    useMemo,
+    useState,
 } from 'react';
 
 import toast from '../../utils/toast';
@@ -10,41 +12,55 @@ import ContactsService from '../../services/ContactsService';
 export default function useHome() {
   const [contacts, setContacts] = useState([]);
   const [orderBy, setOrderBy] = useState('asc');
-  const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [contactBeingDeleted, setContactBeingDeleted] = useState(null);
   const [isLoadingDelete, setIsloadingDelete] = useState(false);
 
-  const filteredContacts = useMemo(() => contacts.filter(
-    (contact) => (contact.name.toLowerCase().includes(searchTerm.toLowerCase())),
-  ), [contacts, searchTerm]);
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const loadContacts = useCallback(async () => {
+  const deferredSearchTerm = useDeferredValue(searchTerm);
+
+    const filteredContacts = useMemo(() => contacts.filter(
+      (contact) => (contact.name.toLowerCase().includes(deferredSearchTerm.toLowerCase())),
+    ), [contacts, deferredSearchTerm]);
+
+  const loadContacts = useCallback(async (signal) => {
     try {
-      setIsLoading(true);
+    setIsLoading(true);
 
-      const contactsList = await ContactsService.listContatcs(orderBy);
+      const contactsList = await ContactsService.listContatcs(orderBy, signal);
 
       setHasError(false);
       setContacts(contactsList);
-    } catch {
-      setHasError(true);
+    } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') {
+            return;
+        }
+
+        setHasError(true);
+        setContacts([]);
     } finally {
       setIsLoading(false);
     }
   }, [orderBy]);
 
   useEffect(() => {
-    loadContacts();
+    const controller = new AbortController();
+
+    loadContacts(controller.signal);
+
+    return () => {
+        controller.abort();
+    };
   }, [loadContacts]);
 
-  function handleToggleOrderBy() {
+  const handleToggleOrderBy = useCallback(() => {
     setOrderBy(
       (prevState) => (prevState === 'asc' ? 'desc' : 'asc'),
     );
-  }
+  }, []);
 
   function handleChangeSearchTerm(event) {
     setSearchTerm(event.target.value);
@@ -54,10 +70,10 @@ export default function useHome() {
     loadContacts();
   }
 
-  function handleDeleteContact(contact) {
+  const handleDeleteContact = useCallback((contact) => {
     setContactBeingDeleted(contact);
     setIsDeleteModalVisible(true);
-  }
+  }, []);
 
   function handleCloseDeleteModal() {
     setIsDeleteModalVisible(false);

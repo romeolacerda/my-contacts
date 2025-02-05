@@ -7,7 +7,11 @@ class HttpClient {
   }
 
   get(path, options) {
-    return this.makeRequest(path, { method: 'GET', headers: options?.headers });
+    return this.makeRequest(path, {
+      method: 'GET',
+      headers: options?.headers,
+      signal: options?.signal,
+    });
   }
 
   post(path, options) {
@@ -43,10 +47,6 @@ class HttpClient {
     }
 
     if (options.headers) {
-      // Object.keys(options.headers).forEach((name) => {
-      //  headers.append(name, options.headers[name]);
-      // });
-
       Object.entries(options.headers).forEach(([name, value]) => {
         headers.append(name, value);
       });
@@ -56,6 +56,7 @@ class HttpClient {
       method: options.method,
       body: JSON.stringify(options.body),
       headers,
+      signal: options.signal,
     });
 
     let responseBody = null;
