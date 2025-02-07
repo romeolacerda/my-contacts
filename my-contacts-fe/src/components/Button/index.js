@@ -1,9 +1,10 @@
+/* eslint-disable react/require-default-props */
 import PropTypes from 'prop-types';
 import Spinner from '../Spinner';
 import { StyledButton } from './styles';
 
 export default function Button({
-  type, disabled, isLoading, children, danger, onClick,
+  type = 'button', disabled = false, isLoading = false, children, danger = false, onClick = undefined,
 }) {
   return (
     <StyledButton danger={danger} onClick={onClick} type={type} disabled={disabled || isLoading}>
@@ -20,12 +21,4 @@ Button.propTypes = {
   children: PropTypes.node.isRequired,
   danger: PropTypes.bool,
   onClick: PropTypes.func,
-};
-
-Button.defaultProps = {
-  type: 'button',
-  disabled: false,
-  isLoading: false,
-  danger: false,
-  onClick: undefined,
 };
