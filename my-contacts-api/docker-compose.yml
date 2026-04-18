@@ -1,0 +1,44 @@
+services:
+  postgres:
+    image: postgres:16.8-alpine3.20
+    container_name: fincheck-db
+    environment:
+      POSTGRES_USER: 'root'
+      POSTGRES_PASSWORD: 'root'
+      POSTGRES_DB: 'fincheck-db'
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U root -d fincheck-db']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    container_name: fincheck-node
+    ports:
+      - '3000:3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: 'postgresql://root:root@postgres:5432/fincheck-db?connect_timeout=300'
+    command: >
+      sh -c "
+      echo 'Waiting for PostgreSQL to be ready...' &&
+      until pg_isready -h postgres -U root -d fincheck-db -t 1; do
+        sleep 1
+      done &&
+      echo 'Running migrations...' &&
+      cd /app && npx prisma migrate deploy &&
+      echo 'Starting server...' &&
+      yarn start:prod
+      "
+    volumes:
+      - ./prisma/migrations:/app/prisma/migrations
+
+volumes:
+  postgres_data:
